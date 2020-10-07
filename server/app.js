@@ -8,7 +8,7 @@ const indexRouter = require('./routes/index');
 const apiRouter = require('./routes/api');
 
 const app = express();
-const viewDir = path.resolve(__dirname, 'views');
+const viewDir = path.resolve(__dirname, 'build');
 
 app.set('views', viewDir);
 app.set('view engine', 'ect');
@@ -22,6 +22,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'build')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
