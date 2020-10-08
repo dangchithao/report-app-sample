@@ -1,5 +1,15 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
+
+mongoose
+    .connect('mongodb://mongo:27017/barca', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    })
+    .catch(err => {
+      console.log('Could not connect to MongoDB!', err.message);
+    });
 
 router.get('/users', function(req, res, next) {
   res.send([
@@ -49,6 +59,26 @@ router.get('/users', function(req, res, next) {
         "bs": "synergize scalable supply-chains"
       }
     }]);
+});
+
+router.post('/users', function(req, res, next) {
+  const User = mongoose.model('User', {
+    name: String,
+    email: String
+  });
+
+  const player = new User({ name: 'Iniesta', email: 'iniesta@barca.com' });
+
+  player
+      .save()
+      .then(() => {
+        console.log('add success');
+
+        res.send(true);
+      })
+      .catch(err => {
+        console.log('Could not add new player!', err.message);
+      });
 });
 
 module.exports = router;

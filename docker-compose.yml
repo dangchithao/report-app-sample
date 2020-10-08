@@ -1,0 +1,24 @@
+version: "3"
+services:
+  express-server:
+    image: myapp
+    ports:
+      - "2401:3000"
+    networks:
+      - my-app
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:3.6.19-xenial
+    ports:
+      - "27017:27017"
+    networks:
+      - my-app
+    volumes:
+      - mongo-data:/data/db
+networks:
+  my-app:
+    driver: bridge
+volumes:
+  mongo-data:
+    driver: local
