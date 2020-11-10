@@ -1,5 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const Pool = require('pg').Pool;
+
 const router = express.Router();
 
 mongoose
@@ -79,6 +81,36 @@ router.post('/users', function(req, res, next) {
       .catch(err => {
         console.log('Could not add new player!', err.message);
       });
+});
+
+
+router.post('/report/users', function(req, res, next) {
+  const pool = new Pool({
+    type: 'postgres',
+    user: 'thaodc',
+    password: 'thaodc-test-postgres-sql',
+    database: 'tabi',
+    host: 'postgres',
+    port: 5442
+  });
+
+  try {
+    const {firstName, lastName, email} = req.body;
+
+    pool.query(
+      "INSERT INTO user(first_name, last_name, email) VALUE($1,$2,$3)",
+      [
+        firstName,
+        lastName,
+        email
+      ]
+    ).then((ressult) => {
+      res.json(ressult);
+    }).catch(err => console.error('Error executing query', err.stack));
+
+  } catch (e) {
+    console.log(e.message);
+  }
 });
 
 module.exports = router;

@@ -1,13 +1,15 @@
-version: "3"
+version: "3.0"
 services:
   express-server:
-    image: myapp
+    image: myapp:1.0
     ports:
       - "2401:3000"
     networks:
       - my-app
     depends_on:
       - mongo
+      - postgres
+      - pgadmin4
   mongo:
     image: mongo:3.6.19-xenial
     ports:
@@ -15,10 +17,32 @@ services:
     networks:
       - my-app
     volumes:
-      - mongo-data:/data/db
+      - mongo-data:/home/thaodc/mongo-data
+  postgres:
+    image: postgres:12
+    environment:
+      POSTGRES_USER: thaodc
+      POSTGRES_PASSWORD: thaodc-test-postgres-sql
+    ports:
+      - "5442:5432"
+    networks:
+      - my-app
+    volumes:
+      - postgres-data:/home/thaodc/postgres-data
+  pgadmin4:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dangchithao@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: thaodc-pgadmin-password
+    ports:
+      - "8889:80"
+    networks:
+      - my-app
 networks:
   my-app:
     driver: bridge
 volumes:
   mongo-data:
+    driver: local
+  postgres-data:
     driver: local
