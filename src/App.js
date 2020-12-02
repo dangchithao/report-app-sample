@@ -1,39 +1,20 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { BrowserRouter as Router, HashRouter, Route, Switch } from 'react-router-dom';
+
+import LoginPage from "./LoginPage";
+import HomePage from "./HomePage";
 
 export default class App extends React.Component {
-  state = {
-    users: []
-  };
-
-  componentDidMount() {
-    fetch('/api/users')
-      .then((response) => {
-        return response.json();
-      })
-      .then((data) => {
-        this.setState({
-          users: data
-        });
-      });
-  }
-
   render() {
-    const { users } = this.state;
-
     return (
-      <div>
-        <ul className="users">
-          {users.map((user) => (
-            <li className="user">
-              <p><strong>Name:</strong> {user.name}</p>
-
-              <p><strong>Email:</strong> {user.email}</p>
-
-              <p><strong>City:</strong> {user.address.city}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <HashRouter>
+        <Suspense fallback={<div>Loading...</div>}>
+          <Switch>
+            <Route exact path="/" component={LoginPage}/>
+            <Route path="/home" component={HomePage}/>
+          </Switch>
+        </Suspense>
+      </HashRouter>
     );
   }
 };

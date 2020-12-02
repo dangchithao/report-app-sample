@@ -1,17 +1,16 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const Pool = require('pg').Pool;
 
 const router = express.Router();
 
-mongoose
-    .connect('mongodb://mongo:27017/barca', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    })
-    .catch(err => {
-      console.log('Could not connect to MongoDB!', err.message);
-    });
+const pool = new Pool({
+  // type: 'postgres',
+  user: 'postgres',
+  password: 'hoilamgi',
+  database: 'postgres',
+  host: 'localhost',
+  port: 5432
+});
 
 router.get('/users', function(req, res, next) {
   res.send([
@@ -63,54 +62,66 @@ router.get('/users', function(req, res, next) {
     }]);
 });
 
-router.post('/users', function(req, res, next) {
-  const User = mongoose.model('User', {
-    name: String,
-    email: String
-  });
 
-  const player = new User({ name: 'Iniesta', email: 'iniesta@barca.com' });
-
-  player
-      .save()
-      .then(() => {
-        console.log('add success');
-
-        res.send(true);
-      })
-      .catch(err => {
-        console.log('Could not add new player!', err.message);
-      });
-});
-
-
-router.post('/report/users', function(req, res, next) {
-  const pool = new Pool({
-    type: 'postgres',
-    user: 'thaodc',
-    password: 'thaodc-test-postgres-sql',
-    database: 'tabi',
-    host: 'postgres',
-    port: 5442
-  });
-
+router.post('/report/contacts', function(req, res, next) {
   try {
     const {firstName, lastName, email} = req.body;
 
     pool.query(
-      "INSERT INTO user(first_name, last_name, email) VALUE($1,$2,$3)",
+      "INSERT INTO contact(id, firstname, lastname, email) VALUES(3,$1,$2,$3)",
       [
         firstName,
         lastName,
         email
       ]
-    ).then((ressult) => {
-      res.json(ressult);
+    ).then((result) => {
+      res.json(result);
     }).catch(err => console.error('Error executing query', err.stack));
 
   } catch (e) {
     console.log(e.message);
   }
 });
+
+
+router.get('/report/contacts', function(req, res, next) {
+  try {
+    pool.query("SELECT * FROM contact")
+      .then((result) => {
+        res.json(result.rows);
+      }).catch(err => {
+        console.error('Error executing query', err.stack)
+      });
+  } catch (e) {
+    console.log(e.message);
+  }
+});
+
+router.post('/authenticate', function(req, res, next) {
+  try {
+    pool.query(
+      "SELECT * FROM public.user WHERE email=$1 AND password=$2",
+      [
+        req.body.email,
+        req.body.password
+      ]
+    ).then((result) => {
+      if (result.rows.length) {
+        res.json(result.rows[0]);
+      } else {
+        res.status(404).json({
+          message: 'Could not found the email/password!'
+        });
+      }
+    }).catch(err => {
+      console.error('Error executing query', err.stack)
+      res.status(500).send(err);
+    });
+  } catch (e) {
+    console.log(e.message);
+    res.status(500).json(e);
+  }
+});
+
 
 module.exports = router;
